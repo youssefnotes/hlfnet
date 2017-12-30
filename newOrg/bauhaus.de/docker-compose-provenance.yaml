@@ -1,0 +1,61 @@
+version: '2'
+
+# Top level network key specify the networks to be created
+networks:
+  provenance:
+# Top level service keys
+services:
+  peer0.bauhaus.de:
+    container_name: peer0.bauhaus.de
+    extends:
+      file: ./config/peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.bauhaus.de
+      - CORE_PEER_LOCALMSPID=DEArtMSP
+      - CORE_PEER_ADDRESS=peer0.bauhaus.de:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.bauhaus.de:7052
+      # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.bauhaus.de:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.bauhaus.de:7051
+    volumes:
+        #needed mapping for peer crypto material - check peer.yaml for msp
+      - ./config/crypto-config/peerOrganizations/bauhaus.de/peers/peer0.bauhaus.de/:/var/hyperledger/crypto/peer
+    ports:
+         - 11051:7051
+         - 11053:7053
+    # depends_on:
+    networks:
+      - provenance
+
+  cli0.bauhaus.de:
+    extends:
+      file: ./config/cli.yaml
+      service: cli
+    container_name: cli0.bauhaus.de
+    environment:
+      - CORE_PEER_ID=cli0.bauhaus.de
+      - CORE_PEER_ADDRESS=peer0.bauhaus.de:7051
+      - CORE_PEER_LOCALMSPID=DEArtMSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/crypto/peer/users/Admin@bauhaus.de/msp
+    volumes:
+      - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+      - ./config/crypto-config/peerOrganizations/bauhaus.de/:/var/hyperledger/crypto/peer
+      - ./config/crypto-config/peerOrganizations/bauhaus.de/peers/peer0.bauhaus.de/tls/:/var/hyperledger/crypto/peer/tls
+    depends_on:
+      - peer0.bauhaus.de
+    networks:
+      - provenance
+
+  # ca.bauhaus:
+  #   container_name: ca.bauhaus
+  #   image: hyperledger/fabric-ca
+  #   environment:
+  #     - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server-config
+  #     - FABRIC_CA_SERVER_CA_NAME=ca.bauhaus
+  #   ports:
+  #     - "10054:7054"
+  #   command: sh -c 'fabric-ca-server start -b admin:adminpw'
+  #   volumes:
+  #     - ./config/crypto-config/peerOrganizations/bauhaus.de/ca/root/:/etc/hyperledger/fabric-ca-server-config
+  #   networks:
+  #     - provenance

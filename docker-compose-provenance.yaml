@@ -1,0 +1,500 @@
+version: '2'
+
+# Top level network key specify the networks to be created
+networks:
+  provenance:
+# Top level service keys
+services:
+
+  ca.egyptianmuseum:
+    container_name: ca.egyptianmuseum
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server-config
+      - FABRIC_CA_SERVER_CA_NAME=ca.egyptianmuseum
+    ports:
+      - "8054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw'
+    volumes:
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/ca/root/:/etc/hyperledger/fabric-ca-server-config
+    networks:
+      - provenance
+
+  ca.louvre:
+    container_name: ca.louvre
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server-config
+      - FABRIC_CA_SERVER_CA_NAME=ca.louvre
+    ports:
+      - "9054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw'
+    volumes:
+      - ./config/crypto-config/peerOrganizations/louvre.fr/ca/root/:/etc/hyperledger/fabric-ca-server-config
+    networks:
+      - provenance
+
+  zookeeper0:
+    container_name: zookeeper0
+    image: hyperledger/fabric-zookeeper
+    restart: always
+    ports:
+      - '2181'
+      - '2888'
+      - '3888'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: zookeeper
+    environment:
+      - ZOO_MY_ID=1
+      - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888
+    networks:
+      - provenance
+
+  zookeeper1:
+    container_name: zookeeper1
+    image: hyperledger/fabric-zookeeper
+    restart: always
+    ports:
+      - '2181'
+      - '2888'
+      - '3888'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: zookeeper
+    environment:
+      - ZOO_MY_ID=2
+      - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888
+    networks:
+      - provenance
+
+  zookeeper2:
+    container_name: zookeeper2
+    image: hyperledger/fabric-zookeeper
+    restart: always
+    ports:
+      - '2181'
+      - '2888'
+      - '3888'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: zookeeper
+    environment:
+      - ZOO_MY_ID=3
+      - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888
+    networks:
+      - provenance
+
+  kafka0:
+    container_name: kafka0
+    image: hyperledger/fabric-kafka
+    restart: always
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    ports:
+      - '9092'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: kafka
+    environment:
+      - KAFKA_BROKER_ID=0
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    networks:
+      - provenance
+
+  kafka1:
+    container_name: kafka1
+    image: hyperledger/fabric-kafka
+    restart: always
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    ports:
+      - '9092'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: kafka
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    networks:
+      - provenance
+
+  kafka2:
+    container_name: kafka2
+    image: hyperledger/fabric-kafka
+    restart: always
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    ports:
+      - '9092'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: kafka
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    networks:
+      - provenance
+
+  kafka3:
+    container_name: kafka3
+    image: hyperledger/fabric-kafka
+    restart: always
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    ports:
+      - '9092'
+    # extends:
+    #   file: base/docker-compose-base.yaml
+    #   service: kafka
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    networks:
+      - provenance
+      
+  orderer.art.ifar.org:
+    # Container name
+    container_name: orderer.art.ifar.org
+    # Public Heyperledger Fabric ARCH x86_64 version V1.0.0
+    image: hyperledger/fabric-orderer:x86_64-1.0.0
+    #Envirnoment varaibles for service container
+    # - VAR:VAL
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/crypto/orderer/msp
+      # enabling TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/crypto/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/crypto/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/crypto/orderer/tls/ca.crt, /var/hyperledger/crypto/ca.egyptianmuseum/tls/ca.crt, /var/hyperledger/crypto/ca.louvre/tls/ca.crt]
+      ## - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/crypto/ca.bauhaus/tls/ca.crt]
+      #Kafka
+      - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+      - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+      - ORDERER_KAFKA_VERBOSE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderers
+    command: orderer
+    volumes:
+    #mapping for genesis block
+    - ./artifacts/orderer/:/var/hyperledger/orderer
+    #mapping for orderer crypto material
+    - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+    - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/ca/root/:/var/hyperledger/crypto/ca.egyptianmuseum
+    - ./config/crypto-config/peerOrganizations/louvre.fr/ca/root/:/var/hyperledger/crypto/ca.louvre
+    # - ./config/crypto-config/peerOrganizations/bauhaus.de/ca/root/:/var/hyperledger/crypto/ca.bauhaus
+    # HOST_PORT:CONTAINER_PORT
+    ports:
+      - 7050:7050
+    depends_on:
+      - ca.egyptianmuseum
+      - ca.louvre
+      - kafka0
+      - kafka1
+      - kafka2
+      - kafka3
+    # Networks accessible to this container (orderer.art.ifar.org)  
+    networks:
+      - provenance
+
+  peer0.egyptianmuseum.org:
+    container_name: peer0.egyptianmuseum.org
+    extends:
+      file: ./config/peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.egyptianmuseum.org
+      - CORE_PEER_LOCALMSPID=EGArtMSP
+      - CORE_PEER_ADDRESS=peer0.egyptianmuseum.org:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.egyptianmuseum.org:7052
+      # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.egyptianmuseum.org:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.egyptianmuseum.org:7051
+      # setting COUCHDB as state DB
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=provenanceDB:5984
+    volumes:
+      #needed mapping for peer crypto material - check peer.yaml for msp
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/peers/peer0.egyptianmuseum.org/:/var/hyperledger/crypto/peer
+    ports:
+         - 7051:7051
+         - 7053:7053
+    depends_on:
+      - orderer.art.ifar.org
+      - ca.egyptianmuseum
+      - provenanceDB
+    networks:
+      - provenance
+
+  peer1.egyptianmuseum.org:
+    container_name: peer1.egyptianmuseum.org
+    extends:
+      file: ./config/peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.egyptianmuseum.org
+      - CORE_PEER_LOCALMSPID=EGArtMSP
+      - CORE_PEER_ADDRESS=peer1.egyptianmuseum.org:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.egyptianmuseum.org:7052
+      # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.egyptianmuseum.org:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.egyptianmuseum.org:7051
+    volumes:
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/peers/peer1.egyptianmuseum.org/:/var/hyperledger/crypto/peer
+    ports:
+         - 8051:7051
+         - 8053:7053
+    depends_on:
+      - orderer.art.ifar.org
+      - ca.egyptianmuseum
+      - peer0.egyptianmuseum.org
+    networks:
+      - provenance 
+
+  peer0.louvre.fr:
+    container_name: peer0.louvre.fr
+    extends:
+      file: ./config/peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.louvre.fr
+      - CORE_PEER_LOCALMSPID=FRArtMSP
+      - CORE_PEER_ADDRESS=peer0.louvre.fr:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.louvre.fr:7052
+      # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.louvre.fr:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.louvre.fr:7051
+    volumes:
+      #needed mapping for peer crypto material - check peer.yaml for msp
+      - ./config/crypto-config/peerOrganizations/louvre.fr/peers/peer0.louvre.fr/:/var/hyperledger/crypto/peer
+    ports:
+         - 9051:7051
+         - 9053:7053
+    depends_on:
+      - orderer.art.ifar.org
+      - ca.louvre
+    networks:
+      - provenance
+
+  peer1.louvre.fr:
+    container_name: peer1.louvre.fr
+    extends:
+      file: ./config/peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.louvre.fr
+      - CORE_PEER_LOCALMSPID=FRArtMSP
+      - CORE_PEER_ADDRESS=peer1.louvre.fr:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.louvre.fr:7052
+      # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.louvre.fr:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.louvre.fr:7051
+    volumes:
+      - ./config/crypto-config/peerOrganizations/louvre.fr/peers/peer1.louvre.fr/:/var/hyperledger/crypto/peer
+    ports:
+         - 10051:7051
+         - 10053:7053
+    depends_on:
+      - orderer.art.ifar.org
+      - ca.louvre
+    networks:
+      - provenance
+
+  cli0.egyptianmuseum.org:
+    extends:
+      file: ./config/cli.yaml
+      service: cli
+    container_name: cli0.egyptianmuseum.org
+    environment:
+      - CORE_PEER_ID=cli0.egyptianmuseum.org
+      - CORE_PEER_LOCALMSPID=EGArtMSP
+      - CORE_PEER_ADDRESS=peer0.egyptianmuseum.org:7051
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/crypto/peer/users/Admin@egyptianmuseum.org/msp
+    volumes:
+      - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/users:/var/hyperledger/crypto/peer/users
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/peers/peer0.egyptianmuseum.org/tls/:/var/hyperledger/crypto/peer/tls
+    depends_on:
+      - orderer.art.ifar.org
+      - peer0.egyptianmuseum.org
+    networks:
+      - provenance
+
+  cli1.egyptianmuseum.org:
+    extends:
+      file: ./config/cli.yaml
+      service: cli
+    container_name: cli1.egyptianmuseum.org
+    environment:
+      - CORE_PEER_ID=cli1.egyptianmuseum.org
+      - CORE_PEER_LOCALMSPID=EGArtMSP
+      - CORE_PEER_ADDRESS=peer1.egyptianmuseum.org:7051
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/crypto/peer/users/Admin@egyptianmuseum.org/msp
+    volumes:
+      - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/users/:/var/hyperledger/crypto/peer/users
+      - ./config/crypto-config/peerOrganizations/egyptianmuseum.org/peers/peer1.egyptianmuseum.org/tls/:/var/hyperledger/crypto/peer/tls
+    depends_on:
+      - orderer.art.ifar.org
+      - peer1.egyptianmuseum.org
+    networks:
+      - provenance
+
+  cli0.louvre.fr:
+    extends:
+      file: ./config/cli.yaml
+      service: cli
+    container_name: cli0.louvre.fr
+    environment:
+      - CORE_PEER_ID=cli0.louvre.fr
+      - CORE_PEER_LOCALMSPID=FRArtMSP
+      - CORE_PEER_ADDRESS=peer0.louvre.fr:7051
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/crypto/peer/users/Admin@louvre.fr/msp
+    volumes:
+      - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+      - ./config/crypto-config/peerOrganizations/louvre.fr/users/:/var/hyperledger/crypto/peer/users
+      - ./config/crypto-config/peerOrganizations/louvre.fr/peers/peer0.louvre.fr/tls/:/var/hyperledger/crypto/peer/tls
+    depends_on:
+      - orderer.art.ifar.org
+      - peer0.louvre.fr
+    networks:
+      - provenance
+
+  cli1.louvre.fr:
+    extends:
+      file: ./config/cli.yaml
+      service: cli
+    container_name: cli1.louvre.fr
+    environment:
+      - CORE_PEER_ID=cli1.louvre.fr
+      - CORE_PEER_LOCALMSPID=FRArtMSP
+      - CORE_PEER_ADDRESS=peer1.louvre.fr:7051
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/crypto/peer/users/Admin@louvre.fr/msp
+    volumes:
+      - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+      - ./config/crypto-config/peerOrganizations/louvre.fr/users/:/var/hyperledger/crypto/peer/users
+      - ./config/crypto-config/peerOrganizations/louvre.fr/peers/peer1.louvre.fr/tls/:/var/hyperledger/crypto/peer/tls
+    depends_on:
+      - orderer.art.ifar.org
+      - peer1.louvre.fr
+    networks:
+      - provenance
+
+  provenanceDB:
+    container_name: provenanceDB
+    image: hyperledger/fabric-couchdb
+    environment:
+      DB_URL: http://localhost:5984/
+    ports:
+      - "5984:5984"
+    networks:
+      - provenance
+
+
+  # client.egyptianmuseum:
+  #   tty: true
+  #   image: hyperledger/fabric-ca
+  #   container_name: client.egyptianmuseum
+  #   environment:
+  #     - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-client
+  #     - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+  #   volumes:
+  #     - ./crypto-config/peerOrganizations/egyptianmuseum.org/users/:/etc/hyperledger/fabric-ca-client
+  #   depends_on:
+  #     - ca.egyptianmuseum
+  #   command: sh -c 'sleep 5;fabric-ca-client enroll -u http://admin:adminpw@ca.egyptianmuseum:7054;sleep 10000'
+  #   networks:
+  #    - provenance
+
+
+
+#to be used For network extension demonestration
+################################################
+  # peer0.bauhaus.de:
+  #   container_name: peer0.bauhaus.de
+  #   extends:
+  #     file: ./config/peer.yaml
+  #     service: peer
+  #   environment:
+  #     - CORE_PEER_ID=peer0.bauhaus.de
+  #     - CORE_PEER_LOCALMSPID=DEArtMSP
+  #     - CORE_PEER_ADDRESS=peer0.bauhaus.de:7051
+  #     - CORE_PEER_CHAINCODELISTENADDRESS=peer0.bauhaus.de:7052
+  #     # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.bauhaus.de:7051
+  #     # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.bauhaus.de:7051
+  #   volumes:
+  #       #needed mapping for peer crypto material - check peer.yaml for msp
+  #     - ./config/crypto-config/peerOrganizations/bauhaus.de/peers/peer0.bauhaus.de/:/var/hyperledger/crypto/peer
+  #   ports:
+  #        - 11051:7051
+  #        - 11053:7053
+  #   depends_on:
+  #     - orderer.art.ifar.org
+  #   networks:
+  #     - provenance
+
+  # cli0.bauhaus.de:
+  #   extends:
+  #     file: ./config/cli.yaml
+  #     service: cli
+  #   container_name: cli0.bauhaus.de
+  #   environment:
+  #     - CORE_PEER_ID=cli0.bauhaus.de
+  #     - CORE_PEER_ADDRESS=peer0.bauhaus.de:7051
+  #     - CORE_PEER_LOCALMSPID=DEArtMSP
+  #     - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/crypto/peer/users/Admin@bauhaus.de/msp
+  #   volumes:
+  #     - ./config/crypto-config/ordererOrganizations/art.ifar.org/orderers/orderer.art.ifar.org/:/var/hyperledger/crypto/orderer
+  #     - ./config/crypto-config/peerOrganizations/bauhaus.de/:/var/hyperledger/crypto/peer
+  #     - ./config/crypto-config/peerOrganizations/bauhaus.de/peers/peer0.bauhaus.de/tls/:/var/hyperledger/crypto/peer/tls
+  #   depends_on:
+  #     - orderer.art.ifar.org
+  #     - peer0.bauhaus.de
+  #   networks:
+  #     - provenance
+
+  # ca.bauhaus:
+  #   image: hyperledger/fabric-ca
+  #   environment:
+  #     - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server-config
+  #     - FABRIC_CA_SERVER_CA_NAME=ca.bauhaus
+  #   ports:
+  #     - "10054:7054"
+  #   command: sh -c 'fabric-ca-server start -b admin:adminpw'
+  #   volumes:
+  #     - ./crypto-config/peerOrganizations/bauhaus.de/ca/root/:/etc/hyperledger/fabric-ca-server-config
+  #   container_name: ca.bauhaus
+  #   networks:
+  #     - provenance
