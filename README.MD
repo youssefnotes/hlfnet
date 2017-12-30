@@ -1,4 +1,4 @@
-# HyperledgerProjects
+# Hyperledger Sample Network
 
 The repository contains sample POC for different Hyperledger Fabric Components
 
